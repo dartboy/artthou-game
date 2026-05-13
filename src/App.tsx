@@ -321,7 +321,7 @@ function App() {
       <section className="game-panel" aria-labelledby="game-title">
         <header className="game-header">
           <p className="kicker">Daily collection game</p>
-          <h1 id="game-title">Erelong</h1>
+          <h1 id="game-title">artthou.</h1>
         </header>
 
         <div className="art-stage" aria-label="Artwork display area">

@@ -60,8 +60,11 @@ input {
 h1 {
   margin: 0;
   color: #ffffff;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: clamp(2.25rem, 8vw, 5rem);
+  font-weight: 400;
   line-height: 0.95;
+  text-transform: lowercase;
 }
 
 .art-stage {
