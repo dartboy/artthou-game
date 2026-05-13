@@ -1,8 +1,9 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import handPoint from './hand6.png';
 
-const MAX_ATTEMPTS = 8;
+const MAX_ATTEMPTS = 6;
 const VALUE_BOILING = 5;
-const VALUE_HOT = 19;
+const VALUE_HOT = 20;
 const VALUE_CENTURIES_AWAY = 2;
 const VALUE_DECADES_AWAY = 2;
 const MET_API_BASE = 'https://collectionapi.metmuseum.org/public/collection/v1';
@@ -74,7 +75,7 @@ function getDecadeDistance(firstYear: number, secondYear: number) {
   return Math.abs(getYearBucket(firstYear, 10) - getYearBucket(secondYear, 10));
 }
 
-function getFeedback(guessYear: number, answerYear: number) {
+function getTemperatureHint(guessYear: number, answerYear: number, previousGuessYear?: number) {
   const delta = answerYear - guessYear;
   const distance = Math.abs(delta);
 
@@ -87,34 +88,41 @@ function getFeedback(guessYear: number, answerYear: number) {
       : 'Wrong century';
   }
   if (getDecadeDistance(guessYear, answerYear) > VALUE_DECADES_AWAY || distance > VALUE_HOT) return 'Decades away';
-  return 'Hot';
+  if (previousGuessYear === undefined) return 'Hot';
+
+  return distance < Math.abs(answerYear - previousGuessYear) ? 'Warmer' : 'Cooler';
 }
 
-function getDirectionEmoji(delta: number) {
-  if (delta === 0) return { emoji: '🎉', label: 'Correct' };
+function getDirectionHint(delta: number) {
+  if (delta === 0) return { label: 'Correct', direction: 'correct' };
   return delta > 0
-    ? { emoji: '⬆️', label: 'Answer is higher' }
-    : { emoji: '⬇️', label: 'Answer is lower' };
+    ? { label: 'Answer is higher', direction: 'up' }
+    : { label: 'Answer is lower', direction: 'down' };
 }
 
-function getClosenessEmoji(guessYear: number, answerYear: number) {
-  const delta = answerYear - guessYear;
-  const distance = Math.abs(delta);
+function getClosenessEmoji(guessYear: number, answerYear: number, previousGuessYear?: number) {
+  const hint = getTemperatureHint(guessYear, answerYear, previousGuessYear);
 
-  if (distance === 0) return { text: 'Winner!🥇', label: 'Won' };
-  if (distance <= VALUE_BOILING) return { text: 'Boiling!🔥', label: 'Boiling' };
-  if (!isSameMillennium(guessYear, answerYear)) {
-    return { text: 'Wrong millennium. 🧊', label: 'Wrong millennium' };
+  switch (hint) {
+    case 'Correct':
+      return { text: 'Winner!🥇', label: 'Won' };
+    case 'Boiling':
+      return { text: 'Boiling!🔥', label: 'Boiling' };
+    case 'Wrong millennium':
+      return { text: 'Wrong millennium.', label: 'Wrong millennium' };
+    case 'Centuries away':
+      return { text: 'Centuries away.', label: 'Centuries away' };
+    case 'Wrong century':
+      return { text: 'Wrong century.', label: 'Wrong century' };
+    case 'Decades away':
+      return { text: 'Decades away.', label: 'Decades away' };
+    case 'Warmer':
+      return { text: 'Warmer. 🔥', label: 'Warmer' };
+    case 'Cooler':
+      return { text: 'Cooler. 🧊', label: 'Cooler' };
+    default:
+      return { text: 'Hot. 😅', label: 'Hot' };
   }
-  if (!isSameCentury(guessYear, answerYear)) {
-    return getCenturyDistance(guessYear, answerYear) > VALUE_CENTURIES_AWAY
-      ? { text: 'Centuries away. 🧊', label: 'Centuries away' }
-      : { text: 'Wrong century. 🤔', label: 'Wrong century' };
-  }
-  if (getDecadeDistance(guessYear, answerYear) > VALUE_DECADES_AWAY || distance > VALUE_HOT) {
-    return { text: 'Decades away. 🤔', label: 'Decades away' };
-  }
-  return { text: 'Hot. 😅', label: 'Hot' };
 }
 
 function getSearchTerm(seed: number) {
@@ -170,15 +178,11 @@ function App() {
   const [isLoadingArtwork, setIsLoadingArtwork] = useState(true);
   const [artworkError, setArtworkError] = useState<string | null>(null);
   const [artworkSeed, setArtworkSeed] = useState(() => Math.floor(Date.now() / 1000));
+  const attemptListRef = useRef<HTMLOListElement | null>(null);
 
   const attemptsLeft = MAX_ATTEMPTS - guesses.length;
   const hasWon = guesses.some((guess) => guess.delta === 0);
   const hasEnded = hasWon || attemptsLeft === 0;
-
-  const attemptSlots = useMemo(
-    () => Array.from({ length: MAX_ATTEMPTS }, (_, index) => guesses[index]),
-    [guesses],
-  );
 
   const loadArtwork = useCallback(
     async (signal: AbortSignal, seed: number) => {
@@ -260,6 +264,12 @@ function App() {
     return () => controller.abort();
   }, [artworkSeed, loadArtwork]);
 
+  useEffect(() => {
+    if (!attemptListRef.current) return;
+
+    attemptListRef.current.scrollTop = attemptListRef.current.scrollHeight;
+  }, [guesses.length]);
+
   function submitGuess(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -282,6 +292,7 @@ function App() {
       value: parsedGuess,
       delta: artwork.year - parsedGuess,
     };
+    const previousGuess = guesses[guesses.length - 1];
     const nextGuesses = [...guesses, nextGuess];
     const won = nextGuess.delta === 0;
     const outOfAttempts = nextGuesses.length === MAX_ATTEMPTS;
@@ -295,7 +306,9 @@ function App() {
       setMessage(`Round over. The piece is dated to ${artwork.year}.`);
     } else {
       setMessage(
-        `${getFeedback(nextGuess.value, artwork.year)}. The answer is ${nextGuess.delta > 0 ? 'higher' : 'lower'}.`,
+        `${getTemperatureHint(nextGuess.value, artwork.year, previousGuess?.value)}. The answer is ${
+          nextGuess.delta > 0 ? 'higher' : 'lower'
+        }.`,
       );
     }
   }
@@ -345,61 +358,7 @@ function App() {
           )}
         </div>
 
-        <form className="guess-form" onSubmit={submitGuess}>
-          <label htmlFor="year-guess">Year guess</label>
-          <div className="input-row">
-            <input
-              id="year-guess"
-              inputMode="numeric"
-              name="year-guess"
-              pattern="-?[0-9]*"
-              onChange={(event) => setGuessInput(event.target.value)}
-              placeholder="e.g. 1889"
-              type="text"
-              value={guessInput}
-              disabled={hasEnded || !artwork}
-            />
-            <button type="submit" disabled={hasEnded || !artwork}>
-              Guess
-            </button>
-          </div>
-        </form>
-
-        <div className="status-row" role="status" aria-live="polite">
-          <span>{message}</span>
-          <strong>{attemptsLeft} left</strong>
-        </div>
-
-        <ol className="attempt-list" aria-label="Guess attempts">
-          {attemptSlots.map((guess, index) => (
-            <li className={guess ? 'attempt filled' : 'attempt'} key={index}>
-              {guess ? (
-                <div className="attempt-grid">
-                  <span className="attempt-value">{guess.value}</span>
-                  <span className="attempt-separator" aria-hidden="true">
-                    |
-                  </span>
-                  <span className="attempt-emoji" aria-label={getDirectionEmoji(guess.delta).label}>
-                    {getDirectionEmoji(guess.delta).emoji}
-                  </span>
-                  <span className="attempt-separator" aria-hidden="true">
-                    |
-                  </span>
-                  <span
-                    className="attempt-closeness"
-                    aria-label={getClosenessEmoji(guess.value, guess.value + guess.delta).label}
-                  >
-                    {getClosenessEmoji(guess.value, guess.value + guess.delta).text}
-                  </span>
-                </div>
-              ) : (
-                <span>Chance {index + 1}</span>
-              )}
-            </li>
-          ))}
-        </ol>
-
-        {hasEnded && (
+        {hasEnded ? (
           <div className="result-card">
             <p>
               {artwork?.title} by {artwork?.artist}. Dated {artwork?.dateLabel}.
@@ -413,7 +372,67 @@ function App() {
               Play again
             </button>
           </div>
+        ) : (
+          <form className="guess-form" onSubmit={submitGuess}>
+            <label htmlFor="year-guess">Year guess</label>
+            <div className="input-row">
+              <input
+                id="year-guess"
+                inputMode="numeric"
+                name="year-guess"
+                pattern="-?[0-9]*"
+                onChange={(event) => setGuessInput(event.target.value)}
+                placeholder="e.g. 1889"
+                type="text"
+                value={guessInput}
+                disabled={!artwork}
+              />
+              <button type="submit" disabled={!artwork}>
+                Guess
+              </button>
+            </div>
+          </form>
         )}
+
+        <div className="status-row" role="status" aria-live="polite">
+          <span>{message}</span>
+          <strong>{attemptsLeft} left</strong>
+        </div>
+
+        <ol className="attempt-list" aria-label="Guess attempts" ref={attemptListRef}>
+          {guesses.map((guess, index) => {
+            const previousGuess = index > 0 ? guesses[index - 1] : undefined;
+            const answerYear = guess.value + guess.delta;
+            const closenessHint = getClosenessEmoji(guess.value, answerYear, previousGuess?.value);
+            const directionHint = getDirectionHint(guess.delta);
+
+            return (
+            <li className="attempt filled" key={`${guess.value}-${index}`}>
+                <div className="attempt-grid">
+                  <span className="attempt-value">{guess.value}</span>
+                  <span className="attempt-direction" aria-label={directionHint.label}>
+                    {directionHint.direction === 'correct' ? (
+                      '🎉'
+                    ) : (
+                      <img
+                        className={`hand-point hand-point-${directionHint.direction}`}
+                        src={handPoint}
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    )}
+                  </span>
+                  <span
+                    className="attempt-closeness"
+                    aria-label={closenessHint?.label}
+                  >
+                    {closenessHint?.text}
+                  </span>
+                </div>
+            </li>
+          );
+          })}
+        </ol>
       </section>
     </main>
   );
