@@ -1,5 +1,9 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import browerImage from './brower.jpg';
+import craesbeeckImage from './craesbeeck.jpg';
+import craesbeeckSmokerImage from './craesbeecksmoker.jpg';
 import handPoint from './hand6.png';
+import plasterImage from './plaster.jpg';
 
 const MAX_ATTEMPTS = 6;
 const VALUE_BOILING = 5;
@@ -125,6 +129,42 @@ function getClosenessEmoji(guessYear: number, answerYear: number, previousGuessY
   }
 }
 
+function getGameOverSummary(finalGuess: Guess | undefined) {
+  if (!finalGuess) return null;
+
+  const distance = Math.abs(finalGuess.delta);
+
+  if (distance === 0) {
+    return {
+      image: craesbeeckSmokerImage,
+      imageAlt: 'Craesbeeck smoker',
+      text: 'You win!',
+    };
+  }
+
+  if (distance === 1) {
+    return {
+      image: craesbeeckImage,
+      imageAlt: 'Craesbeeck portrait',
+      text: 'Only 1 away!',
+    };
+  }
+
+  if (distance < 200) {
+    return {
+      image: plasterImage,
+      imageAlt: 'Plaster figure',
+      text: `${distance} years away!`,
+    };
+  }
+
+  return {
+    image: browerImage,
+    imageAlt: 'Brower painting',
+    text: `${Math.round(distance / 100)} centuries off!`,
+  };
+}
+
 function getSearchTerm(seed: number) {
   return SEARCH_TERMS[Math.abs(seed) % SEARCH_TERMS.length];
 }
@@ -183,6 +223,7 @@ function App() {
   const attemptsLeft = MAX_ATTEMPTS - guesses.length;
   const hasWon = guesses.some((guess) => guess.delta === 0);
   const hasEnded = hasWon || attemptsLeft === 0;
+  const gameOverSummary = hasEnded ? getGameOverSummary(guesses[guesses.length - 1]) : null;
 
   const loadArtwork = useCallback(
     async (signal: AbortSignal, seed: number) => {
@@ -334,7 +375,7 @@ function App() {
       <section className="game-panel" aria-labelledby="game-title">
         <header className="game-header">
           <p className="kicker">Daily collection game</p>
-          <h1 id="game-title">artthou.</h1>
+          <h1 id="game-title">ART THOU</h1>
         </header>
 
         <div className="art-stage" aria-label="Artwork display area">
@@ -399,40 +440,44 @@ function App() {
           <strong>{attemptsLeft} left</strong>
         </div>
 
-        <ol className="attempt-list" aria-label="Guess attempts" ref={attemptListRef}>
-          {guesses.map((guess, index) => {
-            const previousGuess = index > 0 ? guesses[index - 1] : undefined;
-            const answerYear = guess.value + guess.delta;
-            const closenessHint = getClosenessEmoji(guess.value, answerYear, previousGuess?.value);
-            const directionHint = getDirectionHint(guess.delta);
+        {gameOverSummary ? (
+          <div className="game-over-card" role="status" aria-live="polite">
+            <img src={gameOverSummary.image} alt={gameOverSummary.imageAlt} />
+            <div className="game-over-message">{gameOverSummary.text}</div>
+          </div>
+        ) : (
+          <ol className="attempt-list" aria-label="Guess attempts" ref={attemptListRef}>
+            {guesses.map((guess, index) => {
+              const previousGuess = index > 0 ? guesses[index - 1] : undefined;
+              const answerYear = guess.value + guess.delta;
+              const closenessHint = getClosenessEmoji(guess.value, answerYear, previousGuess?.value);
+              const directionHint = getDirectionHint(guess.delta);
 
-            return (
-            <li className="attempt filled" key={`${guess.value}-${index}`}>
-                <div className="attempt-grid">
-                  <span className="attempt-value">{guess.value}</span>
-                  <span className="attempt-direction" aria-label={directionHint.label}>
-                    {directionHint.direction === 'correct' ? (
-                      '🎉'
-                    ) : (
-                      <img
-                        className={`hand-point hand-point-${directionHint.direction}`}
-                        src={handPoint}
-                        alt=""
-                        aria-hidden="true"
-                      />
-                    )}
-                  </span>
-                  <span
-                    className="attempt-closeness"
-                    aria-label={closenessHint?.label}
-                  >
-                    {closenessHint?.text}
-                  </span>
-                </div>
-            </li>
-          );
-          })}
-        </ol>
+              return (
+                <li className="attempt filled" key={`${guess.value}-${index}`}>
+                  <div className="attempt-grid">
+                    <span className="attempt-value">{guess.value}</span>
+                    <span className="attempt-direction" aria-label={directionHint.label}>
+                      {directionHint.direction === 'correct' ? (
+                        '🎉'
+                      ) : (
+                        <img
+                          className={`hand-point hand-point-${directionHint.direction}`}
+                          src={handPoint}
+                          alt=""
+                          aria-hidden="true"
+                        />
+                      )}
+                    </span>
+                    <span className="attempt-closeness" aria-label={closenessHint?.label}>
+                      {closenessHint?.text}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
       </section>
     </main>
   );

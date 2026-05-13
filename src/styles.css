@@ -291,6 +291,44 @@ input:disabled {
   white-space: nowrap;
 }
 
+.game-over-card {
+  height: 200px;
+  width: min(100%, 330px);
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  align-items: center;
+  gap: 12px;
+  margin: 12px auto 0;
+  padding: 12px;
+  border: 1px solid rgba(229, 42, 35, 0.62);
+  border-radius: 18px;
+  background: #242424;
+}
+
+.game-over-card img {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #191919;
+}
+
+.game-over-message {
+  min-height: 76px;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border: 1px solid rgba(229, 42, 35, 0.62);
+  border-radius: 14px;
+  background: #3a2d2c;
+  color: #ffffff;
+  font-size: 1.18rem;
+  font-weight: 900;
+  text-align: center;
+}
+
 .result-card {
   display: flex;
   align-items: center;
