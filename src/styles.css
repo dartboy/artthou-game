@@ -293,38 +293,39 @@ input:disabled {
 
 .game-over-card {
   height: 200px;
-  width: min(100%, 330px);
+  width: min(100%, 430px);
   display: grid;
-  grid-template-columns: 0.95fr 1.05fr;
+  grid-template-columns: 176px 1fr;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin: 12px auto 0;
   padding: 12px;
-  border: 1px solid rgba(229, 42, 35, 0.62);
+  border: 1px solid #444444;
   border-radius: 18px;
   background: #242424;
 }
 
-.game-over-card img {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  display: block;
-  object-fit: contain;
-  border-radius: 12px;
+.game-over-image-frame {
+  width: 176px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 18px;
   background: #191919;
 }
 
+.game-over-image-frame img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
 .game-over-message {
-  min-height: 76px;
   display: grid;
   place-items: center;
-  padding: 12px;
-  border: 1px solid rgba(229, 42, 35, 0.62);
-  border-radius: 14px;
-  background: #3a2d2c;
+  padding: 0;
   color: #ffffff;
-  font-size: 1.18rem;
+  font-size: 1.55rem;
   font-weight: 900;
   text-align: center;
 }
@@ -374,5 +375,18 @@ input:disabled {
 
   .attempt {
     min-height: 52px;
+  }
+
+  .game-over-card {
+    grid-template-columns: 132px 1fr;
+    gap: 12px;
+  }
+
+  .game-over-image-frame {
+    width: 132px;
+  }
+
+  .game-over-message {
+    font-size: 1.25rem;
   }
 }

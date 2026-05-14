@@ -1,9 +1,9 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
-import browerImage from './brower.jpg';
-import craesbeeckImage from './craesbeeck.jpg';
-import craesbeeckSmokerImage from './craesbeecksmoker.jpg';
+import browerImage from './brower1.jpg';
+import craesbeeckImage from './craesbeeck1.jpg';
+import craesbeeckSmokerImage from './craesbeecksmoker1.jpg';
 import handPoint from './hand6.png';
-import plasterImage from './plaster.jpg';
+import plasterImage from './plaster1.jpg';
 
 const MAX_ATTEMPTS = 6;
 const VALUE_BOILING = 5;
@@ -374,7 +374,7 @@ function App() {
     <main className="app-shell">
       <section className="game-panel" aria-labelledby="game-title">
         <header className="game-header">
-          <p className="kicker">Daily collection game</p>
+          <p className="kicker">guess the year this art was made</p>
           <h1 id="game-title">ART THOU</h1>
         </header>
 
@@ -442,7 +442,9 @@ function App() {
 
         {gameOverSummary ? (
           <div className="game-over-card" role="status" aria-live="polite">
-            <img src={gameOverSummary.image} alt={gameOverSummary.imageAlt} />
+            <div className="game-over-image-frame">
+              <img src={gameOverSummary.image} alt={gameOverSummary.imageAlt} />
+            </div>
             <div className="game-over-message">{gameOverSummary.text}</div>
           </div>
         ) : (
