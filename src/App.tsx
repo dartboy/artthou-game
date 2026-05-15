@@ -3,6 +3,7 @@ import browerImage from './brower1.jpg';
 import craesbeeckImage from './craesbeeck1.jpg';
 import craesbeeckSmokerImage from './craesbeecksmoker1.jpg';
 import handPoint from './hand6.png';
+import objectIds from './objectids.json';
 import plasterImage from './plaster1.jpg';
 
 const MAX_ATTEMPTS = 6;
@@ -11,17 +12,8 @@ const VALUE_HOT = 20;
 const VALUE_CENTURIES_AWAY = 2;
 const VALUE_DECADES_AWAY = 2;
 const MET_API_BASE = 'https://collectionapi.metmuseum.org/public/collection/v1';
-const SEARCH_TERMS = ['painting', 'landscape', 'flowers', 'vase', 'interior', 'ship', 'bird', 'garden', 'still life'];
-const BLOCKED_TERMS = [
-  'nude',
-  'nudity',
-  'naked',
-  'bather',
-  'bathers',
-  'bathsheba',
-  'venus',
-  'odalisque',
-];
+const MAX_ARTWORK_LOAD_ATTEMPTS = 25;
+const CURATED_OBJECT_IDS = objectIds as number[];
 
 type Guess = {
   value: number;
@@ -38,24 +30,15 @@ type Artwork = {
   objectUrl: string;
 };
 
-type MetSearchResponse = {
-  objectIDs: number[] | null;
-};
-
 type MetObject = {
   objectID: number;
-  isPublicDomain: boolean;
-  primaryImage: string;
-  primaryImageSmall: string;
+  primaryImage?: string | null;
+  primaryImageSmall?: string | null;
   title: string;
   artistDisplayName: string;
   objectDate: string;
   objectBeginDate: number;
   objectEndDate: number;
-  objectName: string;
-  classification: string;
-  medium: string;
-  tags?: { term: string }[] | null;
   objectURL: string;
 };
 
@@ -165,47 +148,49 @@ function getGameOverSummary(finalGuess: Guess | undefined) {
   };
 }
 
-function getSearchTerm(seed: number) {
-  return SEARCH_TERMS[Math.abs(seed) % SEARCH_TERMS.length];
+function getSeededIndex(seed: number, offset: number, max: number) {
+  return Math.floor((Math.abs(Math.sin(seed + offset * 9_973)) * 10_000) % max);
 }
 
-function seededIndex(seed: number, max: number) {
-  return Math.abs(Math.sin(seed) * 10_000) % max;
+function getCandidateObjectIds(seed: number) {
+  const ids = CURATED_OBJECT_IDS;
+  const candidateCount = Math.min(MAX_ARTWORK_LOAD_ATTEMPTS, ids.length);
+  const usedIndexes = new Set<number>();
+
+  return Array.from({ length: candidateCount }, (_, attempt) => {
+    let index = getSeededIndex(seed, attempt, ids.length);
+
+    while (usedIndexes.has(index)) {
+      index = (index + 1) % ids.length;
+    }
+
+    usedIndexes.add(index);
+    return ids[index];
+  });
 }
 
-function includesBlockedTerms(object: MetObject) {
-  const tagTerms = object.tags?.map((tag) => tag.term).join(' ') ?? '';
-  const searchableText = [
-    object.title,
-    object.objectName,
-    object.classification,
-    object.medium,
-    tagTerms,
-  ]
-    .join(' ')
-    .toLowerCase();
-
-  return BLOCKED_TERMS.some((term) => searchableText.includes(term));
-}
-
-function isSingleYearPublicDomainImage(object: MetObject) {
+function hasUsableArtworkData(object: MetObject) {
   return (
-    object.isPublicDomain &&
-    Boolean(object.primaryImage || object.primaryImageSmall) &&
+    Boolean(object.primaryImageSmall || object.primaryImage) &&
     Number.isInteger(object.objectBeginDate) &&
-    object.objectBeginDate === object.objectEndDate &&
-    !includesBlockedTerms(object)
+    object.objectBeginDate === object.objectEndDate
   );
 }
 
 function toArtwork(object: MetObject): Artwork {
+  const imageUrl = object.primaryImageSmall || object.primaryImage;
+
+  if (!imageUrl) {
+    throw new Error('The selected MET object does not have an image.');
+  }
+
   return {
     id: object.objectID,
     title: object.title || 'Untitled',
     artist: object.artistDisplayName || 'Unknown artist',
     year: object.objectBeginDate,
     dateLabel: object.objectDate || String(object.objectBeginDate),
-    imageUrl: object.primaryImageSmall || object.primaryImage,
+    imageUrl,
     objectUrl: object.objectURL,
   };
 }
@@ -231,26 +216,13 @@ function App() {
       setArtworkError(null);
 
       try {
-        const searchTerm = getSearchTerm(seed);
-        const searchUrl = `${MET_API_BASE}/search?hasImages=true&q=${encodeURIComponent(searchTerm)}`;
-        const searchResponse = await fetch(searchUrl, { signal });
-
-        if (!searchResponse.ok) {
-          throw new Error('The MET search request failed.');
+        if (CURATED_OBJECT_IDS.length === 0) {
+          throw new Error('No curated MET object IDs are available.');
         }
 
-        const searchData = (await searchResponse.json()) as MetSearchResponse;
-        const objectIDs = searchData.objectIDs ?? [];
-
-        if (objectIDs.length === 0) {
-          throw new Error('No MET objects matched today.');
-        }
-
-        const startIndex = Math.floor(seededIndex(seed, objectIDs.length));
-        const candidateIDs = [...objectIDs.slice(startIndex), ...objectIDs.slice(0, startIndex)].slice(0, 60);
         let matchingObject: MetObject | undefined;
 
-        for (const id of candidateIDs) {
+        for (const id of getCandidateObjectIds(seed)) {
           if (signal.aborted) return;
 
           try {
@@ -262,17 +234,18 @@ function App() {
 
             const object = (await objectResponse.json()) as MetObject;
 
-            if (isSingleYearPublicDomainImage(object)) {
+            if (hasUsableArtworkData(object)) {
               matchingObject = object;
               break;
             }
           } catch (error) {
             if (error instanceof DOMException && error.name === 'AbortError') return;
+            if (error instanceof TypeError) throw error;
           }
         }
 
         if (!matchingObject) {
-          throw new Error('No image with a single public-domain year was found.');
+          throw new Error('No usable image was found from the curated MET object IDs.');
         }
 
         setArtwork(toArtwork(matchingObject));
@@ -370,12 +343,18 @@ function App() {
     setArtworkSeed(Math.floor(Date.now() / 1000));
   }
 
+  function handleArtworkImageError() {
+    setArtwork(null);
+    setMessage('That MET image was unavailable. Trying another artwork...');
+    setArtworkSeed((seed) => seed + 1);
+  }
+
   return (
     <main className="app-shell">
       <section className="game-panel" aria-labelledby="game-title">
         <header className="game-header">
           <p className="kicker">guess the year this art was made</p>
-          <h1 id="game-title">ART THOU</h1>
+          <h1 id="game-title">WHEN ART THOU</h1>
         </header>
 
         <div className="art-stage" aria-label="Artwork display area">
@@ -391,7 +370,11 @@ function App() {
               </button>
             </div>
           ) : artwork?.imageUrl ? (
-            <img src={artwork.imageUrl} alt="Artwork from The Metropolitan Museum of Art" />
+            <img
+              src={artwork.imageUrl}
+              alt="Artwork from The Metropolitan Museum of Art"
+              onError={handleArtworkImageError}
+            />
           ) : (
             <div className="image-placeholder">
               <span>MET artwork image</span>
