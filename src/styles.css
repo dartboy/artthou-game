@@ -415,11 +415,12 @@ input:disabled {
 }
 
 .result-card {
+  width: min(100%, 560px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 22px;
+  margin: 16px auto 0;
   padding: 14px;
   border: 1px solid #4d4d4d;
   border-radius: 18px;
@@ -449,7 +450,28 @@ input:disabled {
   }
 
   .result-card {
-    grid-template-columns: 1fr;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .result-card p {
+    flex: 0 0 100%;
+    line-height: 1.35;
+  }
+
+  .result-card a,
+  .result-card button {
+    flex: 1 1 150px;
+  }
+
+  .result-card a {
+    display: grid;
+    min-height: 52px;
+    place-items: center;
+    border: 1px solid #5a5a5a;
+    border-radius: 14px;
+    background: #3a3a3a;
   }
 
   .art-stage {
