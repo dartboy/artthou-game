@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import browerImage from './brower1.jpg';
 import craesbeeckImage from './craesbeeck1.jpg';
 import craesbeeckSmokerImage from './craesbeecksmoker1.jpg';
@@ -197,6 +197,7 @@ function toArtwork(object: MetObject): Artwork {
 
 function App() {
   const [guessInput, setGuessInput] = useState('');
+  const [isBceGuess, setIsBceGuess] = useState(false);
   const [guesses, setGuesses] = useState<Guess[]>([]);
   const [message, setMessage] = useState('Guess the year this piece is dated to.');
   const [artwork, setArtwork] = useState<Artwork | null>(null);
@@ -251,6 +252,7 @@ function App() {
         setArtwork(toArtwork(matchingObject));
         setGuesses([]);
         setGuessInput('');
+        setIsBceGuess(false);
         setMessage('Guess the year this piece is dated to.');
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return;
@@ -290,9 +292,10 @@ function App() {
     if (hasEnded || !artwork) return;
 
     const trimmedGuess = guessInput.trim();
-    const parsedGuess = Number(trimmedGuess);
+    const unsignedGuess = Number(trimmedGuess);
+    const parsedGuess = isBceGuess ? -unsignedGuess : unsignedGuess;
 
-    if (!/^-?\d+$/.test(trimmedGuess) || !Number.isInteger(parsedGuess)) {
+    if (!/^\d+$/.test(trimmedGuess) || !Number.isInteger(unsignedGuess)) {
       setMessage('Enter a whole year.');
       return;
     }
@@ -330,6 +333,7 @@ function App() {
   function requestNewArtwork() {
     setGuesses([]);
     setGuessInput('');
+    setIsBceGuess(false);
     setArtwork(null);
     setMessage('Finding a new MET artwork...');
     setArtworkSeed((seed) => seed + 97);
@@ -338,9 +342,14 @@ function App() {
   function retryArtworkLoad() {
     setGuesses([]);
     setGuessInput('');
+    setIsBceGuess(false);
     setArtwork(null);
     setMessage('Trying the MET again...');
     setArtworkSeed(Math.floor(Date.now() / 1000));
+  }
+
+  function updateGuessInput(event: ChangeEvent<HTMLInputElement>) {
+    setGuessInput(event.target.value.replace(/\D/g, ''));
   }
 
   function handleArtworkImageError() {
@@ -400,17 +409,28 @@ function App() {
           <form className="guess-form" onSubmit={submitGuess}>
             <label htmlFor="year-guess">Year guess</label>
             <div className="input-row">
-              <input
-                id="year-guess"
-                inputMode="numeric"
-                name="year-guess"
-                pattern="-?[0-9]*"
-                onChange={(event) => setGuessInput(event.target.value)}
-                placeholder="e.g. 1889"
-                type="text"
-                value={guessInput}
-                disabled={!artwork}
-              />
+              <div className="year-entry-row">
+                <input
+                  id="year-guess"
+                  inputMode="numeric"
+                  name="year-guess"
+                  pattern="[0-9]*"
+                  onChange={updateGuessInput}
+                  placeholder="e.g. 1889"
+                  type="text"
+                  value={guessInput}
+                  disabled={!artwork}
+                />
+                <button
+                  className={`era-toggle ${isBceGuess ? 'era-toggle-active' : ''}`}
+                  type="button"
+                  aria-pressed={isBceGuess}
+                  onClick={() => setIsBceGuess((isActive) => !isActive)}
+                  disabled={!artwork}
+                >
+                  BCE
+                </button>
+              </div>
               <button type="submit" disabled={!artwork}>
                 Guess
               </button>

@@ -125,7 +125,13 @@ h1 {
 
 .input-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.year-entry-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px;
   gap: 10px;
 }
 
@@ -167,6 +173,29 @@ button {
 
 button:hover:not(:disabled) {
   background: #ff3d34;
+}
+
+.era-toggle {
+  min-width: 88px;
+  border: 1px solid #5a5a5a;
+  background: #3a3a3a;
+  color: #d8d8d8;
+}
+
+.era-toggle:hover:not(:disabled) {
+  border-color: #8a625f;
+  background: #4a3f3e;
+}
+
+.era-toggle-active {
+  border-color: #ff8a82;
+  background: #ffffff;
+  color: #b91919;
+  box-shadow: inset 0 0 0 2px rgba(229, 42, 35, 0.24);
+}
+
+.era-toggle-active:hover:not(:disabled) {
+  background: #ffe6e4;
 }
 
 button:disabled,
@@ -364,13 +393,18 @@ input:disabled {
     padding: 20px 12px;
   }
 
-  .input-row,
   .result-card {
     grid-template-columns: 1fr;
   }
 
-  .input-row {
-    display: grid;
+  .year-entry-row {
+    grid-template-columns: minmax(0, 1fr) 76px;
+    gap: 8px;
+  }
+
+  .era-toggle {
+    min-width: 76px;
+    padding-inline: 12px;
   }
 
   .attempt {
