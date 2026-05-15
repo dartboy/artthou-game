@@ -199,7 +199,7 @@ function App() {
   const [guessInput, setGuessInput] = useState('');
   const [isBceGuess, setIsBceGuess] = useState(false);
   const [guesses, setGuesses] = useState<Guess[]>([]);
-  const [message, setMessage] = useState('Guess the year this piece is dated to.');
+  const [message, setMessage] = useState('');
   const [artwork, setArtwork] = useState<Artwork | null>(null);
   const [isLoadingArtwork, setIsLoadingArtwork] = useState(true);
   const [artworkError, setArtworkError] = useState<string | null>(null);
@@ -253,7 +253,7 @@ function App() {
         setGuesses([]);
         setGuessInput('');
         setIsBceGuess(false);
-        setMessage('Guess the year this piece is dated to.');
+        setMessage('');
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return;
         setArtworkError(
@@ -406,21 +406,31 @@ function App() {
             </button>
           </div>
         ) : (
-          <form className="guess-form" onSubmit={submitGuess}>
+          <form className="guess-form" onSubmit={submitGuess} autoComplete="off">
             <label htmlFor="year-guess">Year guess</label>
             <div className="input-row">
               <div className="year-entry-row">
-                <input
-                  id="year-guess"
-                  inputMode="numeric"
-                  name="year-guess"
-                  pattern="[0-9]*"
-                  onChange={updateGuessInput}
-                  placeholder="e.g. 1889"
-                  type="text"
-                  value={guessInput}
-                  disabled={!artwork}
-                />
+                <div className={`year-input-shell ${!artwork ? 'year-input-shell-disabled' : ''}`}>
+                  <input
+                    className="year-input"
+                    id="year-guess"
+                    inputMode="numeric"
+                    name="artthou-year-guess"
+                    autoComplete="off"
+                    pattern="[0-9]*"
+                    onChange={updateGuessInput}
+                    placeholder="e.g. 1889"
+                    style={guessInput ? { width: `${guessInput.length + 0.5}ch` } : undefined}
+                    type="text"
+                    value={guessInput}
+                    disabled={!artwork}
+                  />
+                  {guessInput && (
+                    <span className="year-era-suffix" aria-hidden="true">
+                      {isBceGuess ? 'BCE' : 'CE'}
+                    </span>
+                  )}
+                </div>
                 <button
                   className={`era-toggle ${isBceGuess ? 'era-toggle-active' : ''}`}
                   type="button"
