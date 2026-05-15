@@ -378,18 +378,7 @@ function App() {
 
     if (isMinusKey) {
       event.preventDefault();
-      setIsBceGuess(true);
-      return;
-    }
-
-    if (
-      event.key === 'Backspace' &&
-      isBceGuess &&
-      event.currentTarget.selectionStart === 0 &&
-      event.currentTarget.selectionEnd === 0
-    ) {
-      event.preventDefault();
-      setIsBceGuess(false);
+      setIsBceGuess((isActive) => !isActive);
     }
   }
 
