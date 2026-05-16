@@ -1,5 +1,6 @@
-import { ChangeEvent, FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import browerImage from './brower1.jpg';
+import countrySuggestions from './countries-filtered.json';
 import craesbeeckImage from './craesbeeck1.jpg';
 import craesbeeckSmokerImage from './craesbeecksmoker1.jpg';
 import handPoint from './hand6.png';
@@ -13,12 +14,22 @@ const VALUE_CENTURIES_AWAY = 2;
 const VALUE_DECADES_AWAY = 2;
 const MET_API_BASE = 'https://collectionapi.metmuseum.org/public/collection/v1';
 const MAX_ARTWORK_LOAD_ATTEMPTS = 25;
+const MAX_WHERE_ARTWORK_LOAD_ATTEMPTS = 80;
 const CURATED_OBJECT_IDS = objectIds as number[];
+const COUNTRY_SUGGESTIONS = countrySuggestions as string[];
+const MAX_COUNTRY_SUGGESTIONS = 7;
 const FORCE_HAND_FALLBACK = new URLSearchParams(window.location.search).has('fallbackHand');
+
+type Page = 'when' | 'where';
 
 type Guess = {
   value: number;
   delta: number;
+};
+
+type CountryGuess = {
+  value: string;
+  isCorrect: boolean;
 };
 
 type Artwork = {
@@ -41,6 +52,8 @@ type MetObject = {
   objectBeginDate: number;
   objectEndDate: number;
   objectURL: string;
+  country?: string;
+  culture?: string;
 };
 
 function getYearBucket(year: number, bucketSize: number) {
@@ -167,9 +180,9 @@ function getSeededIndex(seed: number, offset: number, max: number) {
   return Math.floor((Math.abs(Math.sin(seed + offset * 9_973)) * 10_000) % max);
 }
 
-function getCandidateObjectIds(seed: number) {
+function getCandidateObjectIds(seed: number, maxAttempts = MAX_ARTWORK_LOAD_ATTEMPTS) {
   const ids = CURATED_OBJECT_IDS;
-  const candidateCount = Math.min(MAX_ARTWORK_LOAD_ATTEMPTS, ids.length);
+  const candidateCount = Math.min(maxAttempts, ids.length);
   const usedIndexes = new Set<number>();
 
   return Array.from({ length: candidateCount }, (_, attempt) => {
@@ -192,6 +205,14 @@ function hasUsableArtworkData(object: MetObject) {
   );
 }
 
+function getObjectCountry(object: MetObject) {
+  return (object.country || object.culture || '').trim();
+}
+
+function hasUsableWhereArtworkData(object: MetObject) {
+  return hasUsableArtworkData(object) && getObjectCountry(object).length > 0;
+}
+
 function toArtwork(object: MetObject): Artwork {
   const imageUrl = object.primaryImageSmall || object.primaryImage;
 
@@ -210,7 +231,77 @@ function toArtwork(object: MetObject): Artwork {
   };
 }
 
-function App() {
+function getPageFromHash(): Page {
+  return window.location.hash === '#/where' ? 'where' : 'when';
+}
+
+function normalizeCountry(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/^the\s+/, '')
+    .replace(/[^a-z\s]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function isCountryMatch(guess: string, answer: string) {
+  const normalizedGuess = normalizeCountry(guess);
+  const normalizedAnswer = normalizeCountry(answer);
+
+  if (!normalizedGuess || !normalizedAnswer) return false;
+  if (normalizedGuess === normalizedAnswer) return true;
+
+  const aliases: Record<string, string[]> = {
+    'united states': ['usa', 'us', 'america', 'united states of america'],
+    'united kingdom': ['uk', 'england', 'great britain', 'britain'],
+  };
+
+  return aliases[normalizedAnswer]?.includes(normalizedGuess) ?? false;
+}
+
+function getCountrySuggestions(query: string) {
+  const normalizedQuery = normalizeCountry(query);
+
+  if (!normalizedQuery) return [];
+
+  const startsWithMatches: string[] = [];
+  const includesMatches: string[] = [];
+
+  for (const country of COUNTRY_SUGGESTIONS) {
+    const normalizedCountry = normalizeCountry(country);
+
+    if (normalizedCountry.startsWith(normalizedQuery)) {
+      startsWithMatches.push(country);
+    } else if (normalizedCountry.includes(normalizedQuery)) {
+      includesMatches.push(country);
+    }
+
+    if (startsWithMatches.length >= MAX_COUNTRY_SUGGESTIONS) break;
+  }
+
+  return [...startsWithMatches, ...includesMatches].slice(0, MAX_COUNTRY_SUGGESTIONS);
+}
+
+function GameHeader({ page }: { page: Page }) {
+  return (
+    <header className="game-header">
+      <nav className="mode-nav" aria-label="Game mode">
+        <a className={page === 'when' ? 'mode-link mode-link-active' : 'mode-link'} href="#/when">
+          when
+        </a>
+        <a className={page === 'where' ? 'mode-link mode-link-active' : 'mode-link'} href="#/where">
+          where
+        </a>
+      </nav>
+      <p className="kicker">
+        {page === 'when' ? 'guess the year this art was made' : 'guess where this art is from'}
+      </p>
+      <h1 id="game-title">{page} art thou</h1>
+    </header>
+  );
+}
+
+function WhenGame() {
   const [guessInput, setGuessInput] = useState('');
   const [isBceGuess, setIsBceGuess] = useState(false);
   const [guesses, setGuesses] = useState<Guess[]>([]);
@@ -389,13 +480,7 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
-      <section className="game-panel" aria-labelledby="game-title">
-        <header className="game-header">
-          <p className="kicker">guess the year this art was made</p>
-          <h1 id="game-title">WHEN ART THOU</h1>
-        </header>
-
+    <>
         <div className="art-stage" aria-label="Artwork display area">
           {isLoadingArtwork ? (
             <div className="image-placeholder">
@@ -531,6 +616,329 @@ function App() {
             })}
           </ol>
         )}
+    </>
+  );
+}
+
+function WhereGame() {
+  const [guessInput, setGuessInput] = useState('');
+  const [guesses, setGuesses] = useState<CountryGuess[]>([]);
+  const [message, setMessage] = useState('');
+  const [artwork, setArtwork] = useState<(Artwork & { country: string }) | null>(null);
+  const [isLoadingArtwork, setIsLoadingArtwork] = useState(true);
+  const [artworkError, setArtworkError] = useState<string | null>(null);
+  const [artworkSeed, setArtworkSeed] = useState(() => Math.floor(Date.now() / 1000) + 31);
+  const [isSuggestionListOpen, setIsSuggestionListOpen] = useState(false);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+  const attemptListRef = useRef<HTMLOListElement | null>(null);
+
+  const attemptsLeft = MAX_ATTEMPTS - guesses.length;
+  const hasWon = guesses.some((guess) => guess.isCorrect);
+  const hasEnded = hasWon || attemptsLeft === 0;
+  const filteredCountrySuggestions = useMemo(() => getCountrySuggestions(guessInput), [guessInput]);
+  const showCountrySuggestions = isSuggestionListOpen && filteredCountrySuggestions.length > 0 && !hasEnded && Boolean(artwork);
+
+  const loadArtwork = useCallback(async (signal: AbortSignal, seed: number) => {
+    setIsLoadingArtwork(true);
+    setArtworkError(null);
+
+    try {
+      if (CURATED_OBJECT_IDS.length === 0) {
+        throw new Error('No curated MET object IDs are available.');
+      }
+
+      let matchingObject: MetObject | undefined;
+
+      for (const id of getCandidateObjectIds(seed, MAX_WHERE_ARTWORK_LOAD_ATTEMPTS)) {
+        if (signal.aborted) return;
+
+        try {
+          const objectResponse = await fetch(`${MET_API_BASE}/objects/${id}`, { signal });
+
+          if (!objectResponse.ok) {
+            continue;
+          }
+
+          const object = (await objectResponse.json()) as MetObject;
+
+          if (hasUsableWhereArtworkData(object)) {
+            matchingObject = object;
+            break;
+          }
+        } catch (error) {
+          if (error instanceof DOMException && error.name === 'AbortError') return;
+          if (error instanceof TypeError) throw error;
+        }
+      }
+
+      if (!matchingObject) {
+        throw new Error('No usable artwork with country data was found.');
+      }
+
+      setArtwork({ ...toArtwork(matchingObject), country: getObjectCountry(matchingObject) });
+      setGuesses([]);
+      setGuessInput('');
+      setMessage('');
+      setActiveSuggestionIndex(-1);
+      setIsSuggestionListOpen(false);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      setArtworkError(
+        error instanceof TypeError
+          ? 'Could not reach the MET API. Try reloading the artwork.'
+          : error instanceof Error
+            ? error.message
+            : 'Unable to load artwork.',
+      );
+    } finally {
+      if (!signal.aborted) {
+        setIsLoadingArtwork(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    void loadArtwork(controller.signal, artworkSeed);
+
+    return () => controller.abort();
+  }, [artworkSeed, loadArtwork]);
+
+  useEffect(() => {
+    if (!attemptListRef.current) return;
+
+    attemptListRef.current.scrollTop = attemptListRef.current.scrollHeight;
+  }, [guesses.length]);
+
+  function submitGuess(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (hasEnded || !artwork) return;
+
+    const trimmedGuess = guessInput.trim();
+
+    if (!trimmedGuess) {
+      setMessage('Enter a country.');
+      return;
+    }
+
+    const isCorrect = isCountryMatch(trimmedGuess, artwork.country);
+    const nextGuesses = [...guesses, { value: trimmedGuess, isCorrect }];
+    const outOfAttempts = nextGuesses.length === MAX_ATTEMPTS;
+
+    setGuesses(nextGuesses);
+    setGuessInput('');
+    setActiveSuggestionIndex(-1);
+    setIsSuggestionListOpen(false);
+
+    if (isCorrect) {
+      setMessage(`You got it. The piece is from ${artwork.country}.`);
+    } else if (outOfAttempts) {
+      setMessage(`Round over. The piece is from ${artwork.country}.`);
+    } else {
+      setMessage('Not there. Try another country.');
+    }
+  }
+
+  function requestNewArtwork() {
+    setGuesses([]);
+    setGuessInput('');
+    setActiveSuggestionIndex(-1);
+    setIsSuggestionListOpen(false);
+    setArtwork(null);
+    setMessage('Finding a new MET artwork...');
+    setArtworkSeed((seed) => seed + 97);
+  }
+
+  function retryArtworkLoad() {
+    setGuesses([]);
+    setGuessInput('');
+    setActiveSuggestionIndex(-1);
+    setIsSuggestionListOpen(false);
+    setArtwork(null);
+    setMessage('Trying the MET again...');
+    setArtworkSeed(Math.floor(Date.now() / 1000) + 31);
+  }
+
+  function handleArtworkImageError() {
+    setArtwork(null);
+    setMessage('That MET image was unavailable. Trying another artwork...');
+    setArtworkSeed((seed) => seed + 1);
+  }
+
+  function chooseCountrySuggestion(country: string) {
+    setGuessInput(country);
+    setActiveSuggestionIndex(-1);
+    setIsSuggestionListOpen(false);
+  }
+
+  function updateCountryGuessInput(event: ChangeEvent<HTMLInputElement>) {
+    setGuessInput(event.target.value);
+    setActiveSuggestionIndex(-1);
+    setIsSuggestionListOpen(true);
+  }
+
+  function handleCountryGuessKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (!showCountrySuggestions) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setActiveSuggestionIndex((currentIndex) => (currentIndex + 1) % filteredCountrySuggestions.length);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setActiveSuggestionIndex((currentIndex) =>
+        currentIndex <= 0 ? filteredCountrySuggestions.length - 1 : currentIndex - 1,
+      );
+    } else if (event.key === 'Enter' && activeSuggestionIndex >= 0) {
+      event.preventDefault();
+      chooseCountrySuggestion(filteredCountrySuggestions[activeSuggestionIndex]);
+    } else if (event.key === 'Escape') {
+      setActiveSuggestionIndex(-1);
+      setIsSuggestionListOpen(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="art-stage" aria-label="Artwork display area">
+        {isLoadingArtwork ? (
+          <div className="image-placeholder">
+            <span>Loading MET artwork</span>
+          </div>
+        ) : artworkError ? (
+          <div className="image-placeholder">
+            <span>{artworkError}</span>
+            <button type="button" onClick={retryArtworkLoad}>
+              Reload artwork
+            </button>
+          </div>
+        ) : artwork?.imageUrl ? (
+          <img
+            src={artwork.imageUrl}
+            alt="Artwork from The Metropolitan Museum of Art"
+            onError={handleArtworkImageError}
+          />
+        ) : (
+          <div className="image-placeholder">
+            <span>MET artwork image</span>
+          </div>
+        )}
+      </div>
+
+      {hasEnded ? (
+        <div className="result-card">
+          <p>
+            {artwork?.title} by {artwork?.artist}. From {artwork?.country}. Dated {artwork?.dateLabel}.
+          </p>
+          {artwork?.objectUrl && (
+            <a href={artwork.objectUrl} target="_blank" rel="noreferrer">
+              View at The MET
+            </a>
+          )}
+          <button type="button" onClick={requestNewArtwork}>
+            Play again
+          </button>
+        </div>
+      ) : (
+        <form className="guess-form" onSubmit={submitGuess} autoComplete="off">
+          <label htmlFor="country-guess">Country guess</label>
+          <div className="input-row country-input-row">
+            <div className="country-autocomplete">
+              <input
+                id="country-guess"
+                name="artthou-country-guess"
+                autoComplete="off"
+                aria-autocomplete="list"
+                aria-controls="country-suggestions"
+                aria-expanded={showCountrySuggestions}
+                aria-activedescendant={
+                  activeSuggestionIndex >= 0 ? `country-suggestion-${activeSuggestionIndex}` : undefined
+                }
+                role="combobox"
+                onBlur={() => {
+                  setActiveSuggestionIndex(-1);
+                  setIsSuggestionListOpen(false);
+                }}
+                onChange={updateCountryGuessInput}
+                onFocus={() => setIsSuggestionListOpen(true)}
+                onKeyDown={handleCountryGuessKeyDown}
+                placeholder="e.g. France"
+                type="text"
+                value={guessInput}
+                disabled={!artwork}
+              />
+              {showCountrySuggestions && (
+                <ul className="country-suggestion-list" id="country-suggestions" role="listbox">
+                  {filteredCountrySuggestions.map((country, index) => (
+                    <li
+                      className={
+                        index === activeSuggestionIndex
+                          ? 'country-suggestion-item country-suggestion-item-active'
+                          : 'country-suggestion-item'
+                      }
+                      id={`country-suggestion-${index}`}
+                      key={country}
+                      role="option"
+                      aria-selected={index === activeSuggestionIndex}
+                    >
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => chooseCountrySuggestion(country)}
+                      >
+                        {country}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <button type="submit" disabled={!artwork}>
+              Guess
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="status-row" role="status" aria-live="polite">
+        <span>{message}</span>
+        <strong>{attemptsLeft} left</strong>
+      </div>
+
+      <ol className="attempt-list country-attempt-list" aria-label="Country guess attempts" ref={attemptListRef}>
+        {guesses.map((guess, index) => (
+          <li className="attempt filled country-attempt" key={`${guess.value}-${index}`}>
+            <div className="country-attempt-grid">
+              <span className="attempt-value country-attempt-value">{guess.value}</span>
+              <span className="attempt-closeness country-attempt-result">
+                {guess.isCorrect ? 'Correct' : 'Wrong country'}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </>
+  );
+}
+
+function App() {
+  const [page, setPage] = useState<Page>(getPageFromHash);
+
+  useEffect(() => {
+    function updatePage() {
+      setPage(getPageFromHash());
+    }
+
+    window.addEventListener('hashchange', updatePage);
+    return () => window.removeEventListener('hashchange', updatePage);
+  }, []);
+
+  return (
+    <main className={`app-shell app-shell-${page}`}>
+      <section className="game-panel" aria-labelledby="game-title">
+        <GameHeader page={page} />
+        {page === 'where' ? <WhereGame /> : <WhenGame />}
       </section>
     </main>
   );
