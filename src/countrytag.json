@@ -1,0 +1,1141 @@
+{
+  "Aegean": [
+    "Aegean",
+    "Greece",
+    "Mediterranean"
+  ],
+  "Afghanistan": [
+    "Central Asia",
+    "Silk Road",
+    "Asia"
+  ],
+  "Albania": [
+    "Balkan",
+    "Europe",
+    "Mediterranean"
+  ],
+  "Alexandria Region": [
+    "Egypt",
+    "Mediterranean",
+    "Alexandria Region"
+  ],
+  "Algeria": [
+    "North Africa",
+    "Mediterranean",
+    "Africa"
+  ],
+  "Anatolia": [
+    "Anatolia",
+    "Asia Minor",
+    "Mediterranean"
+  ],
+  "Ancient Greece": [
+    "Ancient Greece",
+    "Greece",
+    "Mediterranean",
+    "Aegean"
+  ],
+  "Ancient Rome": [
+    "Ancient Rome",
+    "Rome",
+    "Mediterranean",
+    "Europe"
+  ],
+  "Andorra": [
+    "Catalan",
+    "Pyrenees",
+    "Europe",
+    "Western Europe"
+  ],
+  "Angola": [
+    "Southern Africa",
+    "Africa",
+    "Portuguese"
+  ],
+  "Antigua & Deps": [
+    "Caribbean",
+    "Americas",
+    "British"
+  ],
+  "Argentina": [
+    "South America",
+    "Americas",
+    "Spanish"
+  ],
+  "Armenia": [
+    "Caucasus region",
+    "Asia",
+    "Eastern Europe"
+  ],
+  "Australia": [
+    "Oceania",
+    "Australia",
+    "British"
+  ],
+  "Austria": [
+    "Austria",
+    "Central Europe",
+    "Europe"
+  ],
+  "Azerbaijan": [
+    "Caucasus region",
+    "Central Asia",
+    "Asia"
+  ],
+  "Bahamas": [
+    "Caribbean",
+    "Americas",
+    "British"
+  ],
+  "Bahrain": [
+    "Persian Gulf",
+    "Asia",
+    "Islamic"
+  ],
+  "Baltic": [
+    "Baltic",
+    "Northern Europe",
+    "Europe"
+  ],
+  "Bangladesh": [
+    "India",
+    "South Asia",
+    "Asia"
+  ],
+  "Barbados": [
+    "Caribbean",
+    "Americas",
+    "British"
+  ],
+  "Belarus": [
+    "Eastern Europe",
+    "Russia",
+    "Europe"
+  ],
+  "Belgium": [
+    "Belgium",
+    "Western Europe",
+    "Europe",
+    "Flemish"
+  ],
+  "Belize": [
+    "Central America",
+    "Americas",
+    "Mesoamerica"
+  ],
+  "Benin": [
+    "West Africa",
+    "Africa"
+  ],
+  "Bhutan": [
+    "South Asia",
+    "Asia",
+    "Himalayan"
+  ],
+  "Bolivia": [
+    "South America",
+    "Americas"
+  ],
+  "Bosnia Herzegovina": [
+    "Balkan",
+    "Europe",
+    "Ottoman Empire"
+  ],
+  "Botswana": [
+    "Southern Africa",
+    "Africa"
+  ],
+  "Brazil": [
+    "South America",
+    "Americas",
+    "Portuguese"
+  ],
+  "Brunei": [
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Bulgaria": [
+    "Balkan",
+    "Eastern Europe",
+    "Europe",
+    "Byzantine"
+  ],
+  "Burkina": [
+    "West Africa",
+    "Africa"
+  ],
+  "Burundi": [
+    "East Africa",
+    "Africa"
+  ],
+  "Byzantine Egypt": [
+    "Egypt",
+    "Byzantine",
+    "Mediterranean"
+  ],
+  "Cambodia": [
+    "Cambodia",
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Cameroon": [
+    "West Africa",
+    "Africa"
+  ],
+  "Canaan": [
+    "Canaan",
+    "Levant",
+    "Asia",
+    "Mediterranean"
+  ],
+  "Canada": [
+    "Canada",
+    "North America",
+    "Americas",
+    "British"
+  ],
+  "Cape Verde": [
+    "West Africa",
+    "Africa",
+    "Atlantic"
+  ],
+  "Caucasus region": [
+    "Caucasus region",
+    "Asia",
+    "Eastern Europe"
+  ],
+  "Central African Rep": [
+    "Central Africa",
+    "Africa"
+  ],
+  "Central Asia": [
+    "Central Asia",
+    "Silk Road",
+    "Asia"
+  ],
+  "Central Delta": [
+    "Egypt",
+    "Africa"
+  ],
+  "Central Europe": [
+    "Central Europe",
+    "Europe"
+  ],
+  "Chad": [
+    "Central Africa",
+    "Africa"
+  ],
+  "Chile": [
+    "South America",
+    "Americas"
+  ],
+  "China": [
+    "China",
+    "East Asia",
+    "Asia",
+    "Silk Road"
+  ],
+  "Colombia": [
+    "South America",
+    "Americas"
+  ],
+  "Comoros": [
+    "East Africa",
+    "Africa",
+    "Indian Ocean"
+  ],
+  "Congo": [
+    "Central Africa",
+    "Africa"
+  ],
+  "Congo {Democratic Rep}": [
+    "Central Africa",
+    "Africa"
+  ],
+  "Costa Rica": [
+    "Costa Rica",
+    "Central America",
+    "Americas",
+    "Mesoamerica"
+  ],
+  "Croatia": [
+    "Balkan",
+    "Europe",
+    "Mediterranean"
+  ],
+  "Cuba": [
+    "Cuba",
+    "Caribbean",
+    "Americas"
+  ],
+  "Cyprus": [
+    "Cyprus",
+    "Mediterranean",
+    "Europe"
+  ],
+  "Czech Republic": [
+    "Czech",
+    "Central Europe",
+    "Europe"
+  ],
+  "Denmark": [
+    "Danish",
+    "Northern Europe",
+    "Europe",
+    "Scandinavian"
+  ],
+  "Djibouti": [
+    "East Africa",
+    "Africa"
+  ],
+  "Dominica": [
+    "Caribbean",
+    "Americas"
+  ],
+  "Dominican Republic": [
+    "Caribbean",
+    "Americas"
+  ],
+  "East Timor": [
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Eastern Delta": [
+    "Egypt",
+    "Africa"
+  ],
+  "Ecuador": [
+    "South America",
+    "Americas"
+  ],
+  "Egypt": [
+    "Egypt",
+    "North Africa",
+    "Africa",
+    "Mediterranean",
+    "Middle Egypt"
+  ],
+  "El Salvador": [
+    "Central America",
+    "Americas",
+    "Mesoamerica"
+  ],
+  "England": [
+    "England",
+    "British Isles",
+    "Europe",
+    "Northern Europe"
+  ],
+  "Equatorial Guinea": [
+    "Central Africa",
+    "Africa"
+  ],
+  "Eritrea": [
+    "East Africa",
+    "Africa"
+  ],
+  "Estonia": [
+    "Baltic",
+    "Northern Europe",
+    "Europe"
+  ],
+  "Ethiopia": [
+    "East Africa",
+    "Africa"
+  ],
+  "Fayum": [
+    "Egypt",
+    "Africa",
+    "Fayum"
+  ],
+  "Fiji": [
+    "Oceania",
+    "Pacific"
+  ],
+  "Finland": [
+    "Finnish",
+    "Northern Europe",
+    "Europe",
+    "Scandinavian"
+  ],
+  "France": [
+    "France",
+    "Western Europe",
+    "Europe",
+    "Mediterranean",
+    "Gaul"
+  ],
+  "Gabon": [
+    "Central Africa",
+    "Africa"
+  ],
+  "Gambia": [
+    "West Africa",
+    "Africa"
+  ],
+  "Georgia": [
+    "Caucasus region",
+    "Asia",
+    "Eastern Europe"
+  ],
+  "Germany": [
+    "Germany",
+    "Central Europe",
+    "Europe",
+    "Northern Europe"
+  ],
+  "Ghana": [
+    "Ghana",
+    "West Africa",
+    "Africa"
+  ],
+  "Greece": [
+    "Greece",
+    "Mediterranean",
+    "Europe",
+    "Aegean",
+    "Balkan"
+  ],
+  "Grenada": [
+    "Caribbean",
+    "Americas"
+  ],
+  "Guatemala": [
+    "Guatemala",
+    "Central America",
+    "Americas",
+    "Mesoamerica"
+  ],
+  "Guinea": [
+    "West Africa",
+    "Africa"
+  ],
+  "Guinea-Bissau": [
+    "West Africa",
+    "Africa",
+    "Portuguese"
+  ],
+  "Guyana": [
+    "South America",
+    "Americas"
+  ],
+  "Haiti": [
+    "Caribbean",
+    "Americas"
+  ],
+  "Honduras": [
+    "Central America",
+    "Americas",
+    "Mesoamerica"
+  ],
+  "Hungary": [
+    "Hungary",
+    "Central Europe",
+    "Europe",
+    "Ottoman Empire"
+  ],
+  "Iceland": [
+    "Iceland",
+    "Northern Europe",
+    "Europe",
+    "Scandinavian"
+  ],
+  "India": [
+    "India",
+    "South Asia",
+    "Asia"
+  ],
+  "Indonesia": [
+    "Indonesia",
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Iran": [
+    "Iran",
+    "Central Asia",
+    "Asia",
+    "Islamic",
+    "Silk Road"
+  ],
+  "Iraq": [
+    "Mesopotamia",
+    "Asia",
+    "Islamic",
+    "Ottoman Empire"
+  ],
+  "Ireland": [
+    "Ireland",
+    "British Isles",
+    "Europe",
+    "Northern Europe"
+  ],
+  "Israel": [
+    "Levant",
+    "Mediterranean",
+    "Asia",
+    "Canaan"
+  ],
+  "Italy": [
+    "Italy",
+    "Europe",
+    "Mediterranean",
+    "Rome",
+    "Southern Europe"
+  ],
+  "Ivory Coast": [
+    "West Africa",
+    "Africa"
+  ],
+  "Jamaica": [
+    "Jamaica",
+    "Caribbean",
+    "Americas"
+  ],
+  "Japan": [
+    "Japan",
+    "East Asia",
+    "Asia"
+  ],
+  "Jordan": [
+    "Levant",
+    "Asia",
+    "Mediterranean"
+  ],
+  "Kazakhstan": [
+    "Kazakhstan",
+    "Central Asia",
+    "Turkic World",
+    "Steppe",
+    "Silk Road"
+  ],
+  "Kenya": [
+    "East Africa",
+    "Africa"
+  ],
+  "Kiribati": [
+    "Pacific",
+    "Oceania"
+  ],
+  "Korea North": [
+    "East Asia",
+    "Asia"
+  ],
+  "Korea South": [
+    "East Asia",
+    "Asia"
+  ],
+  "Kosovo": [
+    "Balkan",
+    "Europe"
+  ],
+  "Kuwait": [
+    "Persian Gulf",
+    "Asia",
+    "Islamic"
+  ],
+  "Kyrgyzstan": [
+    "Kyrgyzstan",
+    "Central Asia",
+    "Turkic World",
+    "Silk Road",
+    "Mountains"
+  ],
+  "Lake Constance": [
+    "Central Europe",
+    "Europe"
+  ],
+  "Laos": [
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Latvia": [
+    "Baltic",
+    "Northern Europe",
+    "Europe"
+  ],
+  "Lebanon": [
+    "Levant",
+    "Mediterranean",
+    "Asia"
+  ],
+  "Lesotho": [
+    "Southern Africa",
+    "Africa"
+  ],
+  "Lesser Sunda Islands": [
+    "Lesser Sunda Islands",
+    "Indonesia",
+    "Southeast Asia"
+  ],
+  "Levant": [
+    "Levant",
+    "Asia",
+    "Mediterranean"
+  ],
+  "Liberia": [
+    "West Africa",
+    "Africa"
+  ],
+  "Libya": [
+    "North Africa",
+    "Africa",
+    "Mediterranean"
+  ],
+  "Liechtenstein": [
+    "Central Europe",
+    "Europe"
+  ],
+  "Lithuania": [
+    "Baltic",
+    "Northern Europe",
+    "Europe"
+  ],
+  "Luxembourg": [
+    "Western Europe",
+    "Europe",
+    "Benelux"
+  ],
+  "Macedonia": [
+    "Balkan",
+    "Europe",
+    "Mediterranean"
+  ],
+  "Madagascar": [
+    "East Africa",
+    "Africa",
+    "Indian Ocean"
+  ],
+  "Malawi": [
+    "East Africa",
+    "Africa"
+  ],
+  "Malaysia": [
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Maldives": [
+    "South Asia",
+    "Indian Ocean"
+  ],
+  "Mali": [
+    "West Africa",
+    "Africa",
+    "Silk Road"
+  ],
+  "Malta": [
+    "Malta",
+    "Mediterranean",
+    "Europe"
+  ],
+  "Marshall Islands": [
+    "Pacific",
+    "Oceania"
+  ],
+  "Mauritania": [
+    "North Africa",
+    "Africa"
+  ],
+  "Mauritius": [
+    "East Africa",
+    "Africa",
+    "Indian Ocean"
+  ],
+  "Memphite Region": [
+    "Egypt",
+    "Africa",
+    "Memphite Region"
+  ],
+  "Mesoamerica": [
+    "Mesoamerica",
+    "Central America",
+    "Americas"
+  ],
+  "Mesopotamia": [
+    "Mesopotamia",
+    "Asia",
+    "Islamic"
+  ],
+  "Mexico": [
+    "Mexico",
+    "North America",
+    "Americas",
+    "Mesoamerica",
+    "Spanish"
+  ],
+  "Micronesia": [
+    "Micronesia",
+    "Pacific",
+    "Oceania"
+  ],
+  "Mid-Atlantic": [
+    "Mid-Atlantic",
+    "Atlantic Ocean"
+  ],
+  "Middle Egypt": [
+    "Egypt",
+    "Africa",
+    "Middle Egypt"
+  ],
+  "Moldova": [
+    "Eastern Europe",
+    "Europe"
+  ],
+  "Monaco": [
+    "Western Europe",
+    "France",
+    "Mediterranean"
+  ],
+  "Mongolia": [
+    "Mongolia",
+    "East Asia",
+    "Central Asia",
+    "Steppe"
+  ],
+  "Montenegro": [
+    "Balkan",
+    "Europe",
+    "Mediterranean"
+  ],
+  "Morocco": [
+    "North Africa",
+    "Africa",
+    "Mediterranean",
+    "Islamic"
+  ],
+  "Mozambique": [
+    "East Africa",
+    "Africa"
+  ],
+  "Myanmar, {Burma}": [
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Namibia": [
+    "Southern Africa",
+    "Africa"
+  ],
+  "Nauru": [
+    "Pacific",
+    "Oceania"
+  ],
+  "Nepal": [
+    "Nepal",
+    "South Asia",
+    "Asia",
+    "Himalayan"
+  ],
+  "Netherlands": [
+    "Netherlands",
+    "Western Europe",
+    "Europe",
+    "Benelux"
+  ],
+  "New England": [
+    "New England",
+    "North America",
+    "Americas"
+  ],
+  "New Zealand": [
+    "New Zealand",
+    "Oceania",
+    "Pacific"
+  ],
+  "Nicaragua": [
+    "Central America",
+    "Americas",
+    "Mesoamerica"
+  ],
+  "Niger": [
+    "West Africa",
+    "Africa"
+  ],
+  "Nigeria": [
+    "West Africa",
+    "Africa"
+  ],
+  "North Island": [
+    "North Island",
+    "New Zealand",
+    "Oceania"
+  ],
+  "Northern Europe": [
+    "Northern Europe",
+    "Europe"
+  ],
+  "Northern France": [
+    "France",
+    "Western Europe",
+    "Europe"
+  ],
+  "Northern Iran": [
+    "Iran",
+    "Central Asia",
+    "Asia"
+  ],
+  "Northern Mesopotamia": [
+    "Mesopotamia",
+    "Asia"
+  ],
+  "Northern Upper Egypt": [
+    "Egypt",
+    "Africa"
+  ],
+  "Northwestern Europe": [
+    "Northwestern Europe",
+    "Europe"
+  ],
+  "Northwestern Iran": [
+    "Iran",
+    "Asia"
+  ],
+  "Norway": [
+    "Norway",
+    "Northern Europe",
+    "Europe",
+    "Scandinavian"
+  ],
+  "Nubia": [
+    "Nubia",
+    "Africa",
+    "Egypt"
+  ],
+  "Oman": [
+    "Arabian Peninsula",
+    "Asia",
+    "Islamic"
+  ],
+  "Pakistan": [
+    "Pakistan",
+    "South Asia",
+    "Asia",
+    "Islamic"
+  ],
+  "Palau": [
+    "Pacific",
+    "Oceania"
+  ],
+  "Panama": [
+    "Central America",
+    "Americas",
+    "Mesoamerica"
+  ],
+  "Papua New Guinea": [
+    "Papua New Guinea",
+    "Southeast Asia",
+    "Oceania"
+  ],
+  "Paraguay": [
+    "South America",
+    "Americas"
+  ],
+  "Peru": [
+    "Peru",
+    "South America",
+    "Americas",
+    "Inca"
+  ],
+  "Philippines": [
+    "Philippines",
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Poland": [
+    "Poland",
+    "Central Europe",
+    "Europe"
+  ],
+  "Portugal": [
+    "Portugal",
+    "Western Europe",
+    "Europe",
+    "Mediterranean"
+  ],
+  "Qatar": [
+    "Persian Gulf",
+    "Asia",
+    "Islamic"
+  ],
+  "Romania": [
+    "Romania",
+    "Eastern Europe",
+    "Europe",
+    "Balkan"
+  ],
+  "Rome": [
+    "Rome",
+    "Italy",
+    "Mediterranean",
+    "Ancient Rome"
+  ],
+  "Russia": [
+    "Russia",
+    "Eastern Europe",
+    "Asia",
+    "Eurasian"
+  ],
+  "Russian Federation": [
+    "Russia",
+    "Eastern Europe",
+    "Asia",
+    "Eurasian"
+  ],
+  "Rwanda": [
+    "East Africa",
+    "Africa"
+  ],
+  "Saint Vincent & the Grenadines": [
+    "Caribbean",
+    "Americas"
+  ],
+  "Samoa": [
+    "Pacific",
+    "Oceania"
+  ],
+  "San Marino": [
+    "Central Europe",
+    "Italy",
+    "Europe"
+  ],
+  "Sao Tome & Principe": [
+    "Central Africa",
+    "Africa"
+  ],
+  "Saudi Arabia": [
+    "Arabian Peninsula",
+    "Asia",
+    "Islamic"
+  ],
+  "Scotland": [
+    "Scotland",
+    "British Isles",
+    "Europe",
+    "Northern Europe"
+  ],
+  "Senegal": [
+    "West Africa",
+    "Africa"
+  ],
+  "Serbia": [
+    "Balkan",
+    "Europe",
+    "Ottoman Empire"
+  ],
+  "Seychelles": [
+    "East Africa",
+    "Africa",
+    "Indian Ocean"
+  ],
+  "Sierra Leone": [
+    "West Africa",
+    "Africa"
+  ],
+  "Singapore": [
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Slovakia": [
+    "Central Europe",
+    "Europe"
+  ],
+  "Slovenia": [
+    "Central Europe",
+    "Europe",
+    "Mediterranean",
+    "Balkan"
+  ],
+  "Solomon Islands": [
+    "Pacific",
+    "Oceania"
+  ],
+  "Somalia": [
+    "East Africa",
+    "Africa"
+  ],
+  "South Africa": [
+    "South Africa",
+    "Southern Africa",
+    "Africa"
+  ],
+  "South Sudan": [
+    "East Africa",
+    "Africa"
+  ],
+  "Spain": [
+    "Spain",
+    "Catalan",
+    "Iberia",
+    "Europe",
+    "Western Europe",
+    "Mediterranean"
+  ],
+  "Sri Lanka": [
+    "South Asia",
+    "Asia",
+    "Indian Ocean"
+  ],
+  "St Kitts & Nevis": [
+    "Caribbean",
+    "Americas"
+  ],
+  "St Lucia": [
+    "Caribbean",
+    "Americas"
+  ],
+  "Sudan": [
+    "East Africa",
+    "Africa",
+    "Nubia"
+  ],
+  "Suriname": [
+    "South America",
+    "Americas"
+  ],
+  "Swaziland": [
+    "Southern Africa",
+    "Africa"
+  ],
+  "Sweden": [
+    "Sweden",
+    "Northern Europe",
+    "Europe",
+    "Scandinavian"
+  ],
+  "Switzerland": [
+    "Switzerland",
+    "Central Europe",
+    "Western Europe",
+    "Europe"
+  ],
+  "Syria": [
+    "Syria",
+    "Levant",
+    "Asia",
+    "Mediterranean",
+    "Islamic"
+  ],
+  "Taiwan": [
+    "East Asia",
+    "Asia"
+  ],
+  "Tajikistan": [
+    "Central Asia",
+    "Turkic World",
+    "Silk Road",
+    "Mountains"
+  ],
+  "Talamanca": [
+    "Costa Rica",
+    "Central America",
+    "Americas"
+  ],
+  "Tanzania": [
+    "East Africa",
+    "Africa"
+  ],
+  "Thailand": [
+    "Thailand",
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Togo": [
+    "West Africa",
+    "Africa"
+  ],
+  "Tonga": [
+    "Pacific",
+    "Oceania"
+  ],
+  "Trinidad & Tobago": [
+    "Caribbean",
+    "Americas"
+  ],
+  "Tunisia": [
+    "North Africa",
+    "Africa",
+    "Mediterranean",
+    "Islamic"
+  ],
+  "Turkey": [
+    "Turkey",
+    "Anatolia",
+    "Byzantine Empire",
+    "Ottoman Empire",
+    "Mediterranean",
+    "Asia",
+    "Turkic World"
+  ],
+  "Turkmenistan": [
+    "Central Asia",
+    "Turkic World",
+    "Silk Road"
+  ],
+  "Tuvalu": [
+    "Pacific",
+    "Oceania"
+  ],
+  "Uganda": [
+    "East Africa",
+    "Africa"
+  ],
+  "Ukraine": [
+    "Eastern Europe",
+    "Europe"
+  ],
+  "United Arab Emirates": [
+    "Persian Gulf",
+    "Asia",
+    "Islamic"
+  ],
+  "United Kingdom": [
+    "United Kingdom",
+    "British Isles",
+    "Northern Europe",
+    "Europe"
+  ],
+  "United States": [
+    "United States",
+    "North America",
+    "Americas"
+  ],
+  "Uruguay": [
+    "South America",
+    "Americas"
+  ],
+  "Uzbekistan": [
+    "Central Asia",
+    "Turkic World",
+    "Silk Road"
+  ],
+  "Vanuatu": [
+    "Pacific",
+    "Oceania"
+  ],
+  "Vatican City": [
+    "Vatican City",
+    "Italy",
+    "Europe",
+    "Mediterranean"
+  ],
+  "Venezuela": [
+    "South America",
+    "Americas"
+  ],
+  "Vietnam": [
+    "Vietnam",
+    "Southeast Asia",
+    "Asia"
+  ],
+  "Yemen": [
+    "Arabian Peninsula",
+    "Asia",
+    "Islamic"
+  ],
+  "Zambia": [
+    "East Africa",
+    "Africa"
+  ],
+  "Zimbabwe": [
+    "Southern Africa",
+    "Africa"
+  ]
+}

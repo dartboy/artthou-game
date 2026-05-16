@@ -42,6 +42,12 @@ type Artwork = {
   objectUrl: string;
 };
 
+type WhereArtwork = Artwork & {
+  country: string;
+  geography: string;
+  culture: string;
+};
+
 type MetObject = {
   objectID: number;
   primaryImage?: string | null;
@@ -54,6 +60,17 @@ type MetObject = {
   objectURL: string;
   country?: string;
   culture?: string;
+  geographyType?: string;
+  city?: string;
+  state?: string;
+  county?: string;
+  region?: string;
+  subregion?: string;
+  locale?: string;
+  locus?: string;
+  excavation?: string;
+  river?: string;
+  geography?: string;
 };
 
 function getYearBucket(year: number, bucketSize: number) {
@@ -206,11 +223,41 @@ function hasUsableArtworkData(object: MetObject) {
 }
 
 function getObjectCountry(object: MetObject) {
-  return (object.country || object.culture || '').trim();
+  return (object.country || '').trim();
+}
+
+function joinObjectFields(fields: Array<string | null | undefined>) {
+  return fields
+    .map((field) => field?.trim())
+    .filter((field): field is string => Boolean(field))
+    .join(', ');
+}
+
+function getObjectGeography(object: MetObject) {
+  return joinObjectFields([
+    object.geography,
+    object.region,
+    object.subregion,
+    object.city,
+    object.state,
+    object.county,
+    object.locale,
+    object.locus,
+    object.excavation,
+    object.river,
+  ]);
+}
+
+function getObjectCulture(object: MetObject) {
+  return (object.culture || '').trim();
+}
+
+function hasObjectOriginData(object: MetObject) {
+  return Boolean(getObjectCountry(object) || getObjectGeography(object) || getObjectCulture(object));
 }
 
 function hasUsableWhereArtworkData(object: MetObject) {
-  return hasUsableArtworkData(object) && getObjectCountry(object).length > 0;
+  return hasUsableArtworkData(object) && hasObjectOriginData(object);
 }
 
 function toArtwork(object: MetObject): Artwork {
@@ -259,6 +306,33 @@ function isCountryMatch(guess: string, answer: string) {
   return aliases[normalizedAnswer]?.includes(normalizedGuess) ?? false;
 }
 
+function normalizedTextIncludesGuess(text: string, guess: string) {
+  const normalizedText = normalizeCountry(text);
+  const normalizedGuess = normalizeCountry(guess);
+
+  return Boolean(normalizedText && normalizedGuess && normalizedText.includes(normalizedGuess));
+}
+
+function isWhereGuessCorrect(guess: string, artwork: WhereArtwork) {
+  if (artwork.country && isCountryMatch(guess, artwork.country)) {
+    return true;
+  }
+
+  if (artwork.geography) {
+    return normalizedTextIncludesGuess(artwork.geography, guess);
+  }
+
+  if (artwork.culture) {
+    return normalizedTextIncludesGuess(artwork.culture, guess);
+  }
+
+  return false;
+}
+
+function getArtworkOriginLabel(artwork: WhereArtwork) {
+  return artwork.country || artwork.geography || artwork.culture || 'Unknown origin';
+}
+
 function getCountrySuggestions(query: string) {
   const normalizedQuery = normalizeCountry(query);
 
@@ -280,6 +354,18 @@ function getCountrySuggestions(query: string) {
   }
 
   return [...startsWithMatches, ...includesMatches].slice(0, MAX_COUNTRY_SUGGESTIONS);
+}
+
+function getExactCountrySuggestion(query: string) {
+  const normalizedQuery = normalizeCountry(query);
+
+  if (!normalizedQuery) return null;
+
+  return COUNTRY_SUGGESTIONS.find((country) => normalizeCountry(country) === normalizedQuery) ?? null;
+}
+
+function resolveCountryGuess(query: string) {
+  return getExactCountrySuggestion(query) ?? getCountrySuggestions(query)[0] ?? null;
 }
 
 function GameHeader({ page }: { page: Page }) {
@@ -624,7 +710,7 @@ function WhereGame() {
   const [guessInput, setGuessInput] = useState('');
   const [guesses, setGuesses] = useState<CountryGuess[]>([]);
   const [message, setMessage] = useState('');
-  const [artwork, setArtwork] = useState<(Artwork & { country: string }) | null>(null);
+  const [artwork, setArtwork] = useState<WhereArtwork | null>(null);
   const [isLoadingArtwork, setIsLoadingArtwork] = useState(true);
   const [artworkError, setArtworkError] = useState<string | null>(null);
   const [artworkSeed, setArtworkSeed] = useState(() => Math.floor(Date.now() / 1000) + 31);
@@ -675,7 +761,12 @@ function WhereGame() {
         throw new Error('No usable artwork with country data was found.');
       }
 
-      setArtwork({ ...toArtwork(matchingObject), country: getObjectCountry(matchingObject) });
+      setArtwork({
+        ...toArtwork(matchingObject),
+        country: getObjectCountry(matchingObject),
+        geography: getObjectGeography(matchingObject),
+        culture: getObjectCulture(matchingObject),
+      });
       setGuesses([]);
       setGuessInput('');
       setMessage('');
@@ -723,8 +814,17 @@ function WhereGame() {
       return;
     }
 
-    const isCorrect = isCountryMatch(trimmedGuess, artwork.country);
-    const nextGuesses = [...guesses, { value: trimmedGuess, isCorrect }];
+    const resolvedGuess = resolveCountryGuess(trimmedGuess);
+
+    if (!resolvedGuess) {
+      setMessage('Choose a country from the list.');
+      setActiveSuggestionIndex(-1);
+      setIsSuggestionListOpen(true);
+      return;
+    }
+
+    const isCorrect = isWhereGuessCorrect(resolvedGuess, artwork);
+    const nextGuesses = [...guesses, { value: resolvedGuess, isCorrect }];
     const outOfAttempts = nextGuesses.length === MAX_ATTEMPTS;
 
     setGuesses(nextGuesses);
@@ -733,9 +833,9 @@ function WhereGame() {
     setIsSuggestionListOpen(false);
 
     if (isCorrect) {
-      setMessage(`You got it. The piece is from ${artwork.country}.`);
+      setMessage(`You got it. The piece is from ${getArtworkOriginLabel(artwork)}.`);
     } else if (outOfAttempts) {
-      setMessage(`Round over. The piece is from ${artwork.country}.`);
+      setMessage(`Round over. The piece is from ${getArtworkOriginLabel(artwork)}.`);
     } else {
       setMessage('Not there. Try another country.');
     }
@@ -829,7 +929,8 @@ function WhereGame() {
       {hasEnded ? (
         <div className="result-card">
           <p>
-            {artwork?.title} by {artwork?.artist}. From {artwork?.country}. Dated {artwork?.dateLabel}.
+            {artwork?.title} by {artwork?.artist}. From {artwork ? getArtworkOriginLabel(artwork) : undefined}. Dated{' '}
+            {artwork?.dateLabel}.
           </p>
           {artwork?.objectUrl && (
             <a href={artwork.objectUrl} target="_blank" rel="noreferrer">
