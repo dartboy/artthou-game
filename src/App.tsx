@@ -1,5 +1,6 @@
 import { ChangeEvent, FormEvent, KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import browerImage from './brower1.jpg';
+import countryMap from './country-map.json';
 import countrySuggestions from './countries-filtered.json';
 import craesbeeckImage from './craesbeeck1.jpg';
 import craesbeeckSmokerImage from './craesbeecksmoker1.jpg';
@@ -7,7 +8,8 @@ import handPoint from './hand6.png';
 import objectIds from './objectids.json';
 import plasterImage from './plaster1.jpg';
 
-const MAX_ATTEMPTS = 6;
+const MAX_WHEN_ATTEMPTS = 6;
+const MAX_WHERE_ATTEMPTS = 4;
 const VALUE_BOILING = 5;
 const VALUE_HOT = 20;
 const VALUE_CENTURIES_AWAY = 2;
@@ -16,6 +18,7 @@ const MET_API_BASE = 'https://collectionapi.metmuseum.org/public/collection/v1';
 const MAX_ARTWORK_LOAD_ATTEMPTS = 25;
 const MAX_WHERE_ARTWORK_LOAD_ATTEMPTS = 80;
 const CURATED_OBJECT_IDS = objectIds as number[];
+const COUNTRY_MAP = countryMap as Record<string, string[]>;
 const COUNTRY_SUGGESTIONS = countrySuggestions as string[];
 const MAX_COUNTRY_SUGGESTIONS = 7;
 const FORCE_HAND_FALLBACK = new URLSearchParams(window.location.search).has('fallbackHand');
@@ -313,17 +316,44 @@ function normalizedTextIncludesGuess(text: string, guess: string) {
   return Boolean(normalizedText && normalizedGuess && normalizedText.includes(normalizedGuess));
 }
 
+function normalizedTextIncludesTerm(text: string, term: string) {
+  const normalizedText = normalizeCountry(text);
+  const normalizedTerm = normalizeCountry(term);
+  const boundedText = ` ${normalizedText} `;
+  const boundedTerm = ` ${normalizedTerm} `;
+
+  return Boolean(
+    normalizedText &&
+      normalizedTerm &&
+      (normalizedText === normalizedTerm ||
+        boundedText.includes(boundedTerm) ||
+        boundedTerm.includes(boundedText)),
+  );
+}
+
+function originMatchesCountryMap(origin: string, guess: string) {
+  return (COUNTRY_MAP[guess] ?? []).some((term) => normalizedTextIncludesTerm(origin, term));
+}
+
+function originMatchesGuess(origin: string, guess: string) {
+  return (
+    isCountryMatch(guess, origin) ||
+    normalizedTextIncludesGuess(origin, guess) ||
+    originMatchesCountryMap(origin, guess)
+  );
+}
+
 function isWhereGuessCorrect(guess: string, artwork: WhereArtwork) {
-  if (artwork.country && isCountryMatch(guess, artwork.country)) {
+  if (artwork.country && originMatchesGuess(artwork.country, guess)) {
     return true;
   }
 
   if (artwork.geography) {
-    return normalizedTextIncludesGuess(artwork.geography, guess);
+    return originMatchesGuess(artwork.geography, guess);
   }
 
   if (artwork.culture) {
-    return normalizedTextIncludesGuess(artwork.culture, guess);
+    return originMatchesGuess(artwork.culture, guess);
   }
 
   return false;
@@ -398,7 +428,7 @@ function WhenGame() {
   const [artworkSeed, setArtworkSeed] = useState(() => Math.floor(Date.now() / 1000));
   const attemptListRef = useRef<HTMLOListElement | null>(null);
 
-  const attemptsLeft = MAX_ATTEMPTS - guesses.length;
+  const attemptsLeft = MAX_WHEN_ATTEMPTS - guesses.length;
   const hasWon = guesses.some((guess) => guess.delta === 0);
   const hasEnded = hasWon || attemptsLeft === 0;
   const gameOverSummary = hasEnded ? getGameOverSummary(guesses[guesses.length - 1]) : null;
@@ -504,7 +534,7 @@ function WhenGame() {
     const previousGuess = guesses[guesses.length - 1];
     const nextGuesses = [...guesses, nextGuess];
     const won = nextGuess.delta === 0;
-    const outOfAttempts = nextGuesses.length === MAX_ATTEMPTS;
+    const outOfAttempts = nextGuesses.length === MAX_WHEN_ATTEMPTS;
 
     setGuesses(nextGuesses);
     setGuessInput('');
@@ -718,7 +748,7 @@ function WhereGame() {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const attemptListRef = useRef<HTMLOListElement | null>(null);
 
-  const attemptsLeft = MAX_ATTEMPTS - guesses.length;
+  const attemptsLeft = MAX_WHERE_ATTEMPTS - guesses.length;
   const hasWon = guesses.some((guess) => guess.isCorrect);
   const hasEnded = hasWon || attemptsLeft === 0;
   const filteredCountrySuggestions = useMemo(() => getCountrySuggestions(guessInput), [guessInput]);
@@ -825,7 +855,7 @@ function WhereGame() {
 
     const isCorrect = isWhereGuessCorrect(resolvedGuess, artwork);
     const nextGuesses = [...guesses, { value: resolvedGuess, isCorrect }];
-    const outOfAttempts = nextGuesses.length === MAX_ATTEMPTS;
+    const outOfAttempts = nextGuesses.length === MAX_WHERE_ATTEMPTS;
 
     setGuesses(nextGuesses);
     setGuessInput('');
