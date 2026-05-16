@@ -5,7 +5,6 @@ import countrySuggestions from './countries-filtered.json';
 import craesbeeckImage from './craesbeeck1.jpg';
 import craesbeeckSmokerImage from './craesbeecksmoker1.jpg';
 import handPoint from './hand6.png';
-import objectIds from './objectids.json';
 import plasterImage from './plaster1.jpg';
 
 const MAX_WHEN_ATTEMPTS = 6;
@@ -15,9 +14,9 @@ const VALUE_HOT = 20;
 const VALUE_CENTURIES_AWAY = 2;
 const VALUE_DECADES_AWAY = 2;
 const MET_API_BASE = 'https://collectionapi.metmuseum.org/public/collection/v1';
+const OBJECT_IDS_URL = `${import.meta.env.BASE_URL}objectids.json`;
 const MAX_ARTWORK_LOAD_ATTEMPTS = 25;
 const MAX_WHERE_ARTWORK_LOAD_ATTEMPTS = 80;
-const CURATED_OBJECT_IDS = objectIds as number[];
 const COUNTRY_MAP = countryMap as Record<string, string[]>;
 const COUNTRY_SUGGESTIONS = countrySuggestions as string[];
 const MAX_COUNTRY_SUGGESTIONS = 7;
@@ -33,6 +32,10 @@ type Guess = {
 type CountryGuess = {
   value: string;
   isCorrect: boolean;
+};
+
+type GameProps = {
+  objectIds: number[];
 };
 
 type Artwork = {
@@ -200,20 +203,23 @@ function getSeededIndex(seed: number, offset: number, max: number) {
   return Math.floor((Math.abs(Math.sin(seed + offset * 9_973)) * 10_000) % max);
 }
 
-function getCandidateObjectIds(seed: number, maxAttempts = MAX_ARTWORK_LOAD_ATTEMPTS) {
-  const ids = CURATED_OBJECT_IDS;
-  const candidateCount = Math.min(maxAttempts, ids.length);
+function isObjectIdList(value: unknown): value is number[] {
+  return Array.isArray(value) && value.every((id) => Number.isInteger(id));
+}
+
+function getCandidateObjectIds(objectIds: number[], seed: number, maxAttempts = MAX_ARTWORK_LOAD_ATTEMPTS) {
+  const candidateCount = Math.min(maxAttempts, objectIds.length);
   const usedIndexes = new Set<number>();
 
   return Array.from({ length: candidateCount }, (_, attempt) => {
-    let index = getSeededIndex(seed, attempt, ids.length);
+    let index = getSeededIndex(seed, attempt, objectIds.length);
 
     while (usedIndexes.has(index)) {
-      index = (index + 1) % ids.length;
+      index = (index + 1) % objectIds.length;
     }
 
     usedIndexes.add(index);
-    return ids[index];
+    return objectIds[index];
   });
 }
 
@@ -325,9 +331,7 @@ function normalizedTextIncludesTerm(text: string, term: string) {
   return Boolean(
     normalizedText &&
       normalizedTerm &&
-      (normalizedText === normalizedTerm ||
-        boundedText.includes(boundedTerm) ||
-        boundedTerm.includes(boundedText)),
+      (normalizedText === normalizedTerm || boundedText.includes(boundedTerm)),
   );
 }
 
@@ -417,7 +421,7 @@ function GameHeader({ page }: { page: Page }) {
   );
 }
 
-function WhenGame() {
+function WhenGame({ objectIds }: GameProps) {
   const [guessInput, setGuessInput] = useState('');
   const [isBceGuess, setIsBceGuess] = useState(false);
   const [guesses, setGuesses] = useState<Guess[]>([]);
@@ -439,13 +443,13 @@ function WhenGame() {
       setArtworkError(null);
 
       try {
-        if (CURATED_OBJECT_IDS.length === 0) {
+        if (objectIds.length === 0) {
           throw new Error('No curated MET object IDs are available.');
         }
 
         let matchingObject: MetObject | undefined;
 
-        for (const id of getCandidateObjectIds(seed)) {
+        for (const id of getCandidateObjectIds(objectIds, seed)) {
           if (signal.aborted) return;
 
           try {
@@ -491,7 +495,7 @@ function WhenGame() {
         }
       }
     },
-    [],
+    [objectIds],
   );
 
   useEffect(() => {
@@ -736,7 +740,7 @@ function WhenGame() {
   );
 }
 
-function WhereGame() {
+function WhereGame({ objectIds }: GameProps) {
   const [guessInput, setGuessInput] = useState('');
   const [guesses, setGuesses] = useState<CountryGuess[]>([]);
   const [message, setMessage] = useState('');
@@ -759,13 +763,13 @@ function WhereGame() {
     setArtworkError(null);
 
     try {
-      if (CURATED_OBJECT_IDS.length === 0) {
+      if (objectIds.length === 0) {
         throw new Error('No curated MET object IDs are available.');
       }
 
       let matchingObject: MetObject | undefined;
 
-      for (const id of getCandidateObjectIds(seed, MAX_WHERE_ARTWORK_LOAD_ATTEMPTS)) {
+      for (const id of getCandidateObjectIds(objectIds, seed, MAX_WHERE_ARTWORK_LOAD_ATTEMPTS)) {
         if (signal.aborted) return;
 
         try {
@@ -816,7 +820,7 @@ function WhereGame() {
         setIsLoadingArtwork(false);
       }
     }
-  }, []);
+  }, [objectIds]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -1053,8 +1057,56 @@ function WhereGame() {
   );
 }
 
+function ObjectIdsStatus({ error }: { error: string | null }) {
+  return (
+    <div className="art-stage" aria-label="Artwork list loading status">
+      <div className="image-placeholder">
+        <span>{error ?? 'Loading artwork list'}</span>
+        {error && (
+          <button type="button" onClick={() => window.location.reload()}>
+            Reload
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [page, setPage] = useState<Page>(getPageFromHash);
+  const [objectIds, setObjectIds] = useState<number[] | null>(null);
+  const [objectIdsError, setObjectIdsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadObjectIds() {
+      setObjectIdsError(null);
+
+      try {
+        const response = await fetch(OBJECT_IDS_URL, { signal: controller.signal });
+
+        if (!response.ok) {
+          throw new Error('Could not load the artwork id list.');
+        }
+
+        const ids = (await response.json()) as unknown;
+
+        if (!isObjectIdList(ids)) {
+          throw new Error('The artwork id list is not valid.');
+        }
+
+        setObjectIds(ids);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        setObjectIdsError(error instanceof Error ? error.message : 'Unable to load the artwork id list.');
+      }
+    }
+
+    void loadObjectIds();
+
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     function updatePage() {
@@ -1069,7 +1121,15 @@ function App() {
     <main className={`app-shell app-shell-${page}`}>
       <section className="game-panel" aria-labelledby="game-title">
         <GameHeader page={page} />
-        {page === 'where' ? <WhereGame /> : <WhenGame />}
+        {objectIds ? (
+          page === 'where' ? (
+            <WhereGame objectIds={objectIds} />
+          ) : (
+            <WhenGame objectIds={objectIds} />
+          )
+        ) : (
+          <ObjectIdsStatus error={objectIdsError} />
+        )}
       </section>
     </main>
   );
