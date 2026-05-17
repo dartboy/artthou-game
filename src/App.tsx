@@ -200,7 +200,9 @@ function HandFallbackSvg() {
 }
 
 function getSeededIndex(seed: number, offset: number, max: number) {
-  return Math.floor((Math.abs(Math.sin(seed + offset * 9_973)) * 10_000) % max);
+  const randomish = Math.sin(seed + offset * 9_973) * 10_000;
+
+  return Math.floor((randomish - Math.floor(randomish)) * max);
 }
 
 function isObjectIdList(value: unknown): value is number[] {
